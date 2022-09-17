@@ -1,0 +1,160 @@
+---
+title: "Problem Set 1: Suggested Solutions"
+author: "73-265 Economics & Data Science"
+date: "Fall 2022"
+output: pdf_document
+---
+
+```{r}
+## load data
+boston <- read.csv("data/boston.csv", head = TRUE)
+```
+ 
+## Question 1
+
+## Part 1-A
+```{r}
+## create two subsets
+boston.treat <- subset(boston, treatment == 1)
+boston.ctrl <- subset(boston, treatment == 0)
+## quartiles
+summary(boston.treat$income)
+summary(boston.ctrl$income)  
+# mean and standard deviation
+c(mean(boston.treat$income),mean(boston.ctrl$income))
+c(sd(boston.treat$income),sd(boston.ctrl$income))
+# mean difference?
+(mean(boston.treat$income)-mean(boston.ctrl$income))/mean(boston$income)
+(mean(boston.treat$income)-mean(boston.ctrl$income))/sd(boston$income)
+```
+    
+The distributions of household income across the control and treatment group are
+balanced in the sense that the median is the same. However, one may argue that 
+the difference in means is economically
+significant because it is 11% of the average income in the sample
+and 21% of the standard deviation.
+
+## Part 1-B
+```{r}
+mean(boston.treat$male)
+mean(boston.ctrl$male)
+```
+
+Of all the individuals assigned to the treatment group,
+`r round(mean(boston.treat$male),3)*100`% are males. Of all the
+individuals assigned to the control group,
+`r round(mean(boston.ctrl$male),3)*100`%
+are male. They differ by about
+`r round((mean(boston.ctrl$male) -
+  mean(boston.treat$male))*100,0)`
+percentage points. The treatment and control groups are relatively
+balanced on income and gender.  
+
+## Question 2
+
+```{r}
+## compute change in attitude
+boston$change <- boston$numberim.post - boston$numberim.pre
+treat.change <- mean(boston$change[boston$treatment == 1],
+                     na.rm = TRUE)
+ctrl.change <- mean(boston$change[boston$treatment == 0],
+                    na.rm = TRUE)
+treat.change
+ctrl.change
+## average treatment effect
+treat.change - ctrl.change
+```
+    
+The average change within the control group is a decrease in
+`r round(ctrl.change*-1, 2)` points on the 5 point scale (where a decrease
+indicates more inclusionary attitudes). The average change within the
+treatment group is an increase in `r round(treat.change, 2)` points on the 5
+point scale (where an increase indicates more exclusionary
+attitudes). The average treatment effect is the difference of the
+two. On average, the responses of individuals in the treatment group
+were more exclusionary than the control group by
+`r round(treat.change - ctrl.change,2)` points. Exposure to
+simulated demographic changes caused this increase in exclusionary
+attitudes.
+
+## Question 3
+
+```{r}
+t.col.change <- mean(boston$change[boston$treatment == 1 &
+                                       boston$college == 1],
+                     na.rm = TRUE)
+c.col.change <- mean(boston$change[boston$treatment == 0 &
+                                       boston$college == 1],
+                     na.rm = TRUE)
+t.nocol.change <- mean(boston$change[boston$treatment == 1 &
+                                         boston$college == 0],
+                       na.rm = TRUE)
+c.nocol.change <- mean(boston$change[boston$treatment == 0 &
+                                         boston$college == 0],
+                       na.rm = TRUE)
+ate.col <- t.col.change - c.col.change
+ate.nocol <- t.nocol.change - c.nocol.change
+ate.col
+ate.nocol
+ate.col - ate.nocol
+```
+    
+The average treatment effect (using the 'change' variable) among
+those with a college education is an increase in exclusionary
+attitudes of about `r round(ate.col,2)` points. Among those
+without a college education, there is an increase in exclusionary
+attitudes of about `r round(ate.nocol,2)`. Both of these effects
+are on a 5 point scale.
+
+The difference between them is less than `r round(ate.col -
+  ate.nocol,2)` points on this scale and is negligible. Because the
+average treatment effects do not vary across the two subgroups, there
+is no evidence of a differential impact.
+
+## Question 4
+
+## Part 4-A
+
+```{r}
+## calculate a vector of age quartiles
+qrt <- quantile(boston$age, probs = seq(from = 0, to = 1, by = 0.25)) 
+qrt
+## create an age quartile group variable
+boston$age.qrt<-1
+boston$age.qrt[boston$age>qrt[2]&boston$age<=qrt[3]]<-2
+boston$age.qrt[boston$age>qrt[3]&boston$age<=qrt[4]]<-3
+boston$age.qrt[boston$age>qrt[4]]<-4
+## treatment group change by age
+t.age.change <- tapply(boston$change[boston$treatment == 1], 
+                       boston$age.qrt[boston$treatment == 1], mean, 
+                       na.rm = TRUE)
+## control group change by age
+c.age.change <- tapply(boston$change[boston$treatment == 0], 
+                       boston$age.qrt[boston$treatment == 0], mean, 
+                       na.rm = TRUE)
+ate.age <- t.age.change - c.age.change
+ate.age
+```
+
+## Part 4-B
+```{r}
+## treatment group change by ideology
+t.idea.change <- tapply(boston$change[boston$treatment == 1],
+                        boston$ideology[boston$treatment == 1],
+                        mean, na.rm = TRUE)
+## control group change by ideology
+c.idea.change <- tapply(boston$change[boston$treatment == 0],
+                        boston$ideology[boston$treatment == 0],
+                        mean, na.rm = TRUE)
+ate.idea <- t.idea.change - c.idea.change
+ate.idea
+```
+    
+Within each age category and ideology category, we see the largest
+changes between treatment and control groups at the extremes of the
+distribution. We also see a fair amount of difference in treatment
+effects, suggesting there may be a differential impact by age and by
+ideology.
+
+    
+
