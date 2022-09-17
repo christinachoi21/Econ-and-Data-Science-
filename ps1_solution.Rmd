@@ -1,5 +1,5 @@
 ---
-title: "Problem Set 1: Suggested Solutions"
+title: "Problem Set 1"
 author: "73-265 Economics & Data Science"
 date: "Fall 2022"
 output: pdf_document
